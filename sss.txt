@@ -1,0 +1,5 @@
+Hi Team,Good afternoon 
+karthik
+i want to know how we will get the logs and traffic details from the Cisco switch to elk. 
+karthik
+what are the commands i need to configure in the cisco switch for getting logs and traffic details in elk
