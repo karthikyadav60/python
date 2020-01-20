@@ -1,0 +1,150 @@
+1.VIPTELA SDWAN:
+  --------------
+ 
+LOGS:-     {'devices': [{'system-ip': '1.1.1.2'}], 'eventname': 'interface-admin-state-change', 'type': 'interface-admin-state-change', 'rulename': 'interface-admin-state-change', 'component': 'VPN', 'entry_time': 1552699205000, 'statcycletime': 1552699205000, 'message': 'The interface admin-state changed to down', 'severity': 'Critical', 'severity_number': 1, 'uuid': '735d1df8-acba-47d6-94c1-a76fe6f7b12e', 'values': [{'host-name': 'vmanage', 'system-ip': '1.1.1.2', 'if-name': 'eth0', 'new-admin-state': 'down', 'vpn-id': '0'}], 'rule_name_display': 'Interface_Admin_State_Change', 'receive_time': 1552699205615, 'values_short_display': [{'host-name': 'vmanage', 'system-ip': '1.1.1.2', 'if-name': 'eth0', 'new-admin-state': 'down'}], 'acknowledged': False, 'active': True}<vmanage-ip> - - [16/Mar/2019 01:22:14] "POST / HTTP/1.1" 200 –
+ 
+CONFIGURATION:-
+   
+    input{
+file{
+path => "/etc/logstash/ranjan/files/log_files/viptela.log"
+start_position => "beginning"
+sincedb_path => "/dev/null"
+    }
+}
+filter{
+        if "vmanage-ip" in [message] {
+                grok {
+                        match => {"message" => "<%{DATA:abc}> - - \[%{DATA:Date}\] \"%{WORD:verb} / %{NOTSPACE:http_version}\" %{NUMBER:status_code}"}
+                }
+        }else {
+
+ 
+
+                kv {
+                        source => "message"
+                        field_split => " "
+                        value_split => ":"
+                        trim_key => "'"
+                        remove_char_key => "<>\[\],{}'"
+                        remove_char_value => "<>\[\],{}"
+                        recursive => true
+                }
+        }
+mutate {
+        remove_field => [ "message" , "KV" ]
+      }
+}
+output{
+stdout {codec => rubydebug}
+}
+output:-
+-------
+viptela.PNG
+
+2.EMS&MCPE BEACON - Event Structure
+----------------------------------
+LOGS:-	Node Down Alarm:
+22/05/19 02-13-16 PM - INFO - <alert id="ce299c65-0c5d-4537-8627-1994f8a5c22d" state="000" type="a" nodeid="48262" nodeip="100.96.38.240" nodename="AR AS KOTTAR 9807880215" sysname="ARAS_KOTTAR_9807880215" nodetype="FIREWALL" nodelocation="KANYAKUMARI" sitename="KOTTAR NAGARCOIL"  nodegroup="MCPE RENAULT" criteria="48262" message="Node Status" since="08:51:33 04/Apr/19" severity="5" usergroup="MCPE" beaperjid="beaper.chn" beaprocessorjid="beaserv.chn"><time>14:13:15 22/May/19</time><status>SET</status><count>100</count><flapped>false</flapped><summary>Node: -</summary><recent>Node down. Route traced = |rem:Device Type:FIREWALL-Link Speed:256 Kbps-Operation Window:null|</recent><service>null</service><servicebg>null</servicebg><reminder></reminder><nonopthrs></nonopthrs><notes></notes></alert>
+
+Configuration:-
+	input{
+   file{
+     path => "/home/vunet/KARTHIK/emc.log"
+     type => "xml_logs"
+     start_position => "beginning"
+     sincedb_path => "/dev/null"
+
+     codec => multiline {
+         pattern => "^\d{2}\/\d{2}\/\d{2} \d{2}-\d{2}-\d{2}"
+         negate => "true"
+         what => "previous"
+     }
+   }
+}
+
+filter{
+        if [type] == "xml_logs" {
+
+    grok{
+            match => {"message" => "%{DATE:date}\s+%{NOTSPACE:time} PM - %{WORD:logging_leval} - %{GREEDYDATA:log_content}" }
+        }
+    grok{
+        match =>{
+            "log_content" => "\<%{GREEDYDATA:KV}><time>"
+                }
+      }
+       kv{
+       source => "KV"
+       field_split => " "
+       value_split => "="
+       #remove_fild
+      }
+      xml
+          {
+          source => "log_content"
+          #store_xml => false
+          target => "doc"
+          xpath_discrete => true
+          xpath_extended => true
+          xpath_field_extract_table_path => "/home/vunet/KARTHIK/ems.yml"
+      }
+
+    }
+mutate {
+        remove_field => [ "log_content" , "KV" ]
+      }
+}
+output {
+       stdout { codec => rubydebug }
+}
+
+Output:-
+------------
+  EMS.PNG 
+3.VERSA SDWAN- Event Structure
+---------------------------------
+LOGS:-
+sdwan-datapath-down alarm:
+22/05/19 04-48-48 PM - INFO - SourceIP: 100.67.18.3 , Received: 2019-05-22T11:20:22+0000 alarmLog, applianceName=VC-IND-MUM, tenantName=SIS, alarmType=sdwan-datapath-down, alarmKey=VC-IND-MUM|WAN-INTERNET|IND-WB-2019005632-KOL-1|OSP-LTE-1|fc_nc, generateTime=1558543457, applianceId=1, vsnId=0, tenantId=6, alarmCause=connectionEstablishmentError, alarmClearable=yes, alarmClass=cleared, alarmKind=symptom, alarmEventType=communicationsAlarm, alarmSeverity=cleared, alarmOwner=tenant, alarmSeqNo=1402, alarmText="Datapath from VC-IND-MUM/WAN-INTERNET to IND-WB-2019005632-KOL-1/OSP-LTE-1 for fwdClass fc_nc is up ", siteName=VC-IND-MUM, serialNum=N/A
+
+Configuration:-
+	input{
+file{
+path => "/home/vunet/KARTHIK/swedon.log"
+start_position => "beginning"
+sincedb_path => "/dev/null"
+    }
+}
+filter{
+
+grok {
+       match => {"message" => "%{DATE:date}\s+%{NOTSPACE:time} PM - %{GREEDYDATA:KV}"}
+     }
+
+
+kv {
+  source => "KV"
+  field_split => ","
+  value_split => "="
+  trim_key => " "
+  recursive => true
+   }
+mutate {
+        remove_field => [ "message" , "KV" ]
+
+    gsub => ["message", "\] [^\[]+", "] "]
+}
+}
+output{
+stdout {codec => rubydebug}
+}
+
+Output:-
+----------
+VERSA SDWAN.PNG
+
+
+
+
+
