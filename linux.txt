@@ -1,0 +1,127 @@
+ System information as of Wed Dec 11 13:26:16 IST 2019
+
+  System load:  0.04              Users logged in:                1
+  Usage of /:   8.9% of 97.44GB   IP address for eth0:            192.168.0.19
+  Memory usage: 54%               IP address for docker0:         172.17.0.1
+  Swap usage:   1%                IP address for br-30642a065a63: 172.19.0.1
+  Processes:    146
+
+ * Overheard at KubeCon: "microk8s.status just blew my mind".
+
+     https://microk8s.io/docs/commands#microk8s.status
+
+ * Canonical Livepatch is available for installation.
+   - Reduce system reboots and improve kernel security. Activate at:
+     https://ubuntu.com/livepatch
+
+59 packages can be updated.
+9 updates are security updates.
+
+
+Last login: Wed Dec 11 13:16:01 2019 from 192.168.1.119
+ranjan@inblrdevelk:~$ clear
+ranjan@inblrdevelk:~$ ulimits -as
+ulimits: command not found
+ranjan@inblrdevelk:~$ ulimits -n
+ulimits: command not found
+ranjan@inblrdevelk:~$ sudo -s
+[sudo] password for ranjan:
+root@inblrdevelk:~# ulimits -as
+ulimits: command not found
+root@inblrdevelk:~# ulimit -as
+core file size          (blocks, -c) 0
+data seg size           (kbytes, -d) unlimited
+scheduling priority             (-e) 0
+file size               (blocks, -f) unlimited
+pending signals                 (-i) 1235
+max locked memory       (kbytes, -l) 16384
+max memory size         (kbytes, -m) unlimited
+open files                      (-n) 32768
+pipe size            (512 bytes, -p) 8
+POSIX message queues     (bytes, -q) 819200
+real-time priority              (-r) 0
+stack size              (kbytes, -s) 8192
+cpu time               (seconds, -t) unlimited
+max user processes              (-u) 1235
+virtual memory          (kbytes, -v) unlimited
+file locks                      (-x) unlimited
+root@inblrdevelk:~# ulimit -ah
+bash: ulimit: -h: invalid option
+ulimit: usage: ulimit [-SHabcdefiklmnpqrstuvxPT] [limit]
+root@inblrdevelk:~# ulimit -aH
+core file size          (blocks, -c) unlimited
+data seg size           (kbytes, -d) unlimited
+scheduling priority             (-e) 0
+file size               (blocks, -f) unlimited
+pending signals                 (-i) 1235
+max locked memory       (kbytes, -l) 16384
+max memory size         (kbytes, -m) unlimited
+open files                      (-n) 32768
+pipe size            (512 bytes, -p) 8
+POSIX message queues     (bytes, -q) 819200
+real-time priority              (-r) 0
+stack size              (kbytes, -s) unlimited
+cpu time               (seconds, -t) unlimited
+max user processes              (-u) 1235
+virtual memory          (kbytes, -v) unlimited
+file locks                      (-x) unlimited
+root@inblrdevelk:~# vi etc/security/limit.conf
+root@inblrdevelk:~# vi etc/security/limits.conf
+root@inblrdevelk:~# cd etc/security/limits.conf
+bash: cd: etc/security/limits.conf: No such file or directory
+root@inblrdevelk:~# sudo etc/security/limits.conf
+sudo: etc/security/limits.conf: command not found
+root@inblrdevelk:~# sudo /etc/security/limits.conf
+sudo: /etc/security/limits.conf: command not found
+root@inblrdevelk:~# (vi /etc/security/limits.conf)
+================================================
+#        - a user name
+#        - a group name, with @group syntax
+#        - the wildcard *, for default entry
+#        - the wildcard %, can be also used with %group syntax,
+#                 for maxlogin limit
+#        - NOTE: group and wildcard limits are not applied to root.
+#          To apply a limit to the root user, <domain> must be
+#          the literal username root.
+#
+#<type> can have the two values:
+#        - "soft" for enforcing the soft limits
+#        - "hard" for enforcing hard limits
+#
+#<item> can be one of the following:
+#        - core - limits the core file size (KB)
+#        - data - max data size (KB)
+#        - fsize - maximum filesize (KB)
+#        - memlock - max locked-in-memory address space (KB)
+#        - nofile - max number of open files
+#        - rss - max resident set size (KB)
+#        - stack - max stack size (KB)
+#        - cpu - max CPU time (MIN)
+#        - nproc - max number of processes
+#        - as - address space limit (KB)
+#        - maxlogins - max number of logins for this user
+#        - maxsyslogins - max number of logins on the system
+#        - priority - the priority to run user process with
+#        - locks - max number of file locks the user can hold
+#        - sigpending - max number of pending signals
+#        - msgqueue - max memory used by POSIX message queues (bytes)
+#        - nice - max nice priority allowed to raise to values: [-20, 19]
+#        - rtprio - max realtime priority
+#        - chroot - change root to directory (Debian-specific)
+#
+<domain>      <type>  <item>         <value>
+#
+
+#*               soft    core            0
+#root            hard    core            100000
+#*               hard    rss             10000
+#@student        hard    nproc           20
+#@faculty        soft    nproc           20
+#@faculty        hard    nproc           50
+#ftp             hard    nproc           0
+#ftp             -       chroot          /ftp
+#@student        -       maxlogins       4
+ranjan          soft    nofile          65535
+ranjan          hard    nofile          32768
+# End of file
+"/etc/security/limits.conf" 57L, 2203C                                                                                                                                     57,13         Bot
